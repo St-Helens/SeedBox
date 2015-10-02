@@ -1,0 +1,751 @@
+<?php
+
+/**
+ * @file
+ * Main file for the Bible Field module
+ */
+
+// Used for default range in chapters and verses
+define('BIBLE_FIELD_DEFAULT_COUNT', 200);
+
+/**
+ * Implements hook_field_info().
+ */
+function bible_field_field_info() {
+  return array(
+    'bible_field' => array(
+      'label' => t('Bible reference'),
+      'description' => t('Stores biblical references'),
+      'default_widget' => 'bible_field_default',
+      'default_formatter' => 'bible_field_default',
+      'module' => 'bible_field',
+      'settings' => array(
+        'version' => '',
+        'alphabetical' => 0,
+      ),
+    )
+  );
+}
+
+/**
+ * Implements hook_field_settings_form().
+ */
+function bible_field_field_settings_form($field, $instance, $has_data) {  
+  $form['version'] = array(
+    '#type' => 'select',
+    '#options' => bible_field_bible_options(),
+    '#title' => t('Bible version'),
+    '#default_value' => isset($field['settings']['version']) ? $field['settings']['version'] : '',
+    '#weight' => 1,
+  );
+  $form['alphabetical'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Sort books alphabetically'),
+    '#default_value' => isset($field['settings']['alphabetical']) ? $field['settings']['alphabetical'] : 0,
+    '#weight' => 1,
+  );
+  return $form;
+}
+ 
+/**
+ * Implements hook_field_validate()
+ */
+function bible_field_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+  foreach ($items as $delta => $item) {
+    if ($item['chapter_start'] == 0 && $item['chapter_end'] != 0) { // Ending chapter set, but not start
+      $errors[$field['field_name']][$langcode][$delta][] = array(
+        'error' => 'bible_field_reference_invalid',
+        'message' => t('You set an ending chapter but not a beginning one.'),
+      );
+    }
+    if ($item['verse_start'] == 0 && $item['verse_end'] != 0) { // Ending chapter set, but not start
+      $errors[$field['field_name']][$langcode][$delta][] = array(
+        'error' => 'bible_field_reference_invalid',
+        'message' => t('You set an ending verse but not a beginning one.'),
+      );
+    }
+    if ($item['verse_start'] != '0' && $item['chapter_start'] == '0') { // Verse is set but not chapter
+      $errors[$field['field_name']][$langcode][$delta][] = array(
+        'error' => 'bible_field_reference_invalid',
+        'message' => t('You have selected a starting verse but not a chapter'),
+      );
+    }
+    if ($item['verse_end'] != '0' && $item['chapter_end'] == '0') { // Verse is set but not chapter
+      $errors[$field['field_name']][$langcode][$delta][] = array(
+        'error' => 'bible_field_reference_invalid',
+        'message' => t('You have selected a ending verse but not a chapter'),
+      );
+    }
+  }
+}
+
+/**
+ * Implements hook_field_widget_error().
+ */
+function bible_field_field_widget_error($element, $error, $form, &$form_state) {
+  switch ($error['error']) {
+    case 'bible_field_reference_invalid':
+      form_error($element, $error['message']);
+      break;
+  }
+}
+
+/**
+ * Implements hook_field_presave().
+ */
+function bible_field_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  foreach($items as $delta => $item) {
+    //Sort out end points
+    if($item['chapter_end'] < $item['chapter_start']) {
+      $item['chapter_end'] = $item['chapter_start'];
+    }
+    
+    if($item['chapter_end'] == $item['chapter_start'] && $item['verse_end'] < $item['verse_start']) {
+      $item['verse_end'] = $item['verse_start'];
+    }
+    
+    //Generate weights
+    $book = bible_field_load_book($item['book_id']);
+    $item['book_name'] = $book['name'];
+    $book_weight = str_pad($book['section_weight'], 3, "0", STR_PAD_LEFT) . str_pad($book['weight'], 3, "0", STR_PAD_LEFT);
+    $item['reference_start_weight'] = (int) $book_weight . str_pad($item['chapter_start'], 3, "0", STR_PAD_LEFT) . str_pad($item['verse_start'], 3, "0", STR_PAD_LEFT); 
+    $item['reference_end_weight'] = (int) $book_weight . str_pad($item['chapter_end'], 3, "0", STR_PAD_LEFT) . str_pad($item['verse_end'], 3, "0", STR_PAD_LEFT);
+    
+    $items[$delta] = $item;
+  } 
+}
+
+/**
+ * Implements hook_field_is_empty().
+ */
+function bible_field_field_is_empty($item, $field) {
+  if (empty($item['book_id'])) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Implementation of hook_field_widget_info().
+ */
+function bible_field_field_widget_info() {
+  return array(
+    'bible_field_default' => array(
+      'label' => t('Default bible field'),
+      'field types' => array('bible_field'),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_field_widget_form().
+ */
+function bible_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  $value = isset($items[$delta]) ? $items[$delta] : array();
+  $widget = $element;
+  $widget['#delta'] = $delta;
+  
+  switch ($instance['widget']['type']) {
+    
+    case 'bible_field_default':
+      
+      drupal_add_js(drupal_get_path('module', 'bible_field') .'/bible_field.js');
+      drupal_add_css(drupal_get_path('module', 'bible_field') . '/bible_field.css');
+      $widget += array(
+        '#type' => 'fieldset',
+        '#delta' => $delta,
+        '#title' => t('Bible Passage'),
+        '#tree' => TRUE,
+        '#attributes' => array('class' => array('biblefield-default-fieldset')),
+        '#attached' => array('js' => array(drupal_get_path('module', 'bible_field') .'/bible_field.js' => array(
+          'type' => 'file',
+        ))),
+      );
+         
+      $chapter_array = array('0' => t('Chapter'));
+      $verse_array = array('0' => t('Verse'));
+      for($i = 1; $i < BIBLE_FIELD_DEFAULT_COUNT; $i++) {
+        $chapter_array["$i"] = "$i";
+        $verse_array["$i"] = "$i";
+      }
+      
+      //get the version ID
+      if (isset($form_state['values'][$instance['field_name']][$langcode][$delta]['bible_id'])) {
+        $bible_id = $form_state['values'][$instance['field_name']][$langcode][$delta]['bible_id'];
+      }
+      else if (isset($value['bible_id'])) {
+        $bible_id = $value['bible_id'];      
+      }
+      else if (isset($field['settings']['version'])) {
+        $bible_id = $field['settings']['version'];
+      }
+      else {
+        $bible_id = '';
+      }
+      
+      $form_state['books_id_return'] = array($instance['field_name'], $langcode, $delta, 'book_id');
+      
+      $widget['bible_id'] = array(
+        '#type' => 'select',
+        '#default_value' => $bible_id,
+        '#options' => bible_field_bible_options(array(), array('display' => 'abbreviation')),
+        '#attributes' => array( 'class' => array('biblefield-select') ),
+        '#weight' => 1,
+        '#tree' => true,
+        '#ajax' => array(
+          'wrapper' => 'books-div',
+          'callback' => 'bible_field_ajax_get_book_select',
+          'method' => 'replace',
+          'effect' => 'fade',
+        ),         
+      );
+      
+      //work out which books we're going to load
+      $book_load_vars = array();
+      $book_load_opts = array(
+        'display bible headers' => FALSE, 
+        'display section headers' => TRUE,
+      );
+      
+      $book_load_vars['bibles'] = array(
+        '1' => array(
+          'bible_id' => $bible_id,
+        ),
+      );
+      $book_load_opts['filter by'] = array('bible');
+      
+      
+      $widget['book_id'] = array(
+        '#type' => 'select',
+        '#default_value' => isset($value['book_id']) ? $value['book_id'] : '',
+        '#options' => array_merge(array(0 => t('Book')), bible_field_book_options($book_load_vars, $book_load_opts)),
+        '#attributes' => array('class' => array('biblefield-book-input','biblefield-select'),),
+        '#weight' => 2,
+        '#tree' => TRUE,
+        '#prefix' => '<div id="books-div">',
+        '#suffix' => '</div>',
+      );
+      $widget['from'] = array(
+        '#markup' => '<div class="form-item"> from </div>',
+        '#weight' => 3,
+      );
+      $widget['chapter_start'] = array(
+        '#type' => 'select',
+        '#default_value' => isset($value['chapter_start']) ? $value['chapter_start'] : '',
+        '#options' => $chapter_array,
+        '#attributes' => array('class' => array('biblefield-chapter-start-input', 'biblefield-select')),
+        '#weight' => 4,
+        '#tree' => TRUE,
+      );
+      $widget['verse_start'] = array(
+        '#type' => 'select',
+        '#default_value' => isset($value['verse_start']) ? $value['verse_start'] : '',
+        '#attributes' => array('class' => array('biblefield-verse-start-input','biblefield-select')),
+        '#options' => $verse_array,
+        '#weight' => 5,
+        '#tree' => TRUE,
+      );
+      $widget['to'] = array(
+        '#markup' => '<div class="form-item"> to </div>',
+        '#weight' => 6,
+      );
+      $widget['chapter_end'] = array(
+        '#type' => 'select',
+        '#default_value' => isset($value['chapter_end']) ? $value['chapter_end'] : '',
+        '#attributes' => array('class' => array('biblefield-chapter-end-input','biblefield-select')),
+        '#options' => $chapter_array,
+        '#weight' => 7,
+        '#tree' => TRUE,
+      );
+      $widget['verse_end'] = array(
+        '#type' => 'select',
+        '#default_value' => isset($value['verse_end']) ? $value['verse_end'] : '',
+        '#attributes' => array('class' => array('biblefield-verse-end-input','biblefield-select')),
+        '#options' => $verse_array,
+        '#weight' => 8,
+        '#tree' => TRUE,
+      );
+            
+      // Create hidden inputs with chapter ranges
+      $widget['hidden_chapters'] = array(
+        '#type' => 'markup',
+        '#value' => bible_field_book_to_chapter_hidden_inputs($field['settings']['version']),
+        '#tree' => TRUE,
+      );
+      break;
+  } 
+  
+  $element += $widget;
+  return $element;
+}
+
+function bible_field_ajax_get_book_select($form, $form_state) {
+  $place = $form_state['books_id_return'];
+  return $form[$place[0]][$place[1]][$place[2]][$place[3]];
+}
+
+/**
+ * Create a list of hidden inputs that map books to the number of chapters
+ *
+ * TODO
+ */
+function bible_field_book_to_chapter_hidden_inputs($bible_version) {
+  return '';
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ *
+ * Returns information about available field formatters.
+ */
+function bible_field_field_formatter_info() {
+  return array(
+    'bible_field_default' => array(
+       'label' => t('Default'),
+       'field types' => array('bible_field'),
+    ),
+    'bible_field_section' => array(
+       'label' => t('Section'),
+       'field types' => array('bible_field'),
+    ),
+    'bible_field_book' => array(
+       'label' => t('Book'),
+       'field types' => array('bible_field'),
+    ),
+    'bible_field_book_mach' => array(
+       'label' => t('Book Machine Name'),
+       'field types' => array('bible_field'),
+    ),
+    'bible_field_book_chapter' => array(
+       'label' => t('Book & Starting Chapter'),
+       'field types' => array('bible_field'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ *
+ * This could do with some refactoring
+ */
+function bible_field_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  switch($display['type']) {
+    case 'bible_field_default':
+      foreach($items as $delta => $item) {
+        $chapter_start = $item['chapter_start'];
+        $chapter_end = $item['chapter_end'];
+        $verse_start = $item['verse_start'];
+        $verse_end = $item['verse_end'];
+        
+        if ($chapter_end == 0) { //one chapter and one verse
+          $chapters = $chapter_start;
+          if($verse_start != 0) {
+            $chapters .= ':'.$verse_start;
+          }
+        }
+        else if ($chapter_start == $chapter_end) { // One chapter
+          $chapters = $chapter_start .':'. $verse_start; // One verse
+          if ($verse_start != $verse_end) { // Multiple verses
+            $chapters .= '-'. $verse_end;
+          }
+        } else { // Multiple chapters
+          $chapters = $chapter_start .':'. $verse_start .' - '. $chapter_end .':'. $verse_end;
+        }
+        
+        //get book info
+        $book = bible_field_load_book($item['book_id']);
+        $output = $book['label'] . ' ' . $chapters . ' ('.$book['bible_abbreviation'].') ' . l("Read...", "http://www.biblegateway.com/bible?version=".$book['bible_abbreviation']."&passage=".$book['label']."+".$chapters);
+        
+        $element[$delta]['#markup'] = $output;
+      }    
+      break;
+    case 'bible_field_book':
+      foreach($items as $delta => $item) {
+        $book = bible_field_load_book($item['book_id']);
+        $output = $book['label'];
+        $element[$delta]['#markup'] = $output;
+      }
+      break;
+    case 'bible_field_book_chapter':
+      foreach($items as $delta => $item) {
+        $book = bible_field_load_book($item['book_id']);
+        $output = $book['label'] . ' ' . $item['chapter_start'];
+        $element[$delta]['#markup'] = $output;
+      }
+      break;
+    case 'bible_field_section':
+      foreach($items as $delta => $item) {
+        $book = bible_field_load_book($item['book_id']);
+        $output = $book['section_label'];
+        $element[$delta]['#markup'] = $output;
+      }
+      break;
+    case 'bible_field_book_mach': //The book machine name
+      foreach($items as $delta => $item) {
+        $book = bible_field_load_book($item['book_id']);
+        $output = $book['name'];
+        $element[$delta]['#markup'] = $output;
+      }
+      break;
+  }
+  return $element;
+}
+
+/**
+ * Load bibles from the bible_field_bible table
+ */
+function bible_field_load_bibles($variables = array(), $options = array()) {
+  $query = db_select('bible_field_bible', 'b');
+  $query->fields('b');
+  
+  //filtering by bibles
+  if(isset($options['filter by']) && in_array('bible', $options['filter by'])) {
+    $bible_ids = array();
+    foreach($variables['bibles'] as $bible) {
+      $bible_ids[] = $bible['bible_id'];
+    }
+    $query->condition('bible_id', $bible_ids, 'IN');
+  }
+  
+  $query->orderBy('weight', 'ASC');
+  $result = $query->execute();
+  
+  while($record = $result->fetchAssoc()) {
+    $bibles[$record['bible_id']] = $record;
+  }  
+  
+  return $bibles;            
+}
+
+/**
+ * Load sections for a given bible from bible_field_section
+ *
+ * @param $variables
+ *   An associative array of things to filter by.
+ *   - "bibles": an array of bibles
+ *   - "sections": an array of sections
+ *
+ * @param $options
+ *   An associative array of options.
+ *   - "filter by": an array of filters, bible and/or section and or bookids
+ *   - "order by": an array of fields to order by
+ *
+ * @return
+ *   An array of books organised by bible section and book name
+ *
+ * TODO:
+ *  - Add filter by bible
+ *  - Add filter by machine names
+ */
+function bible_field_load_sections($variables = array(), $options = array()) {
+  $query = db_select('bible_field_section', 's');
+  $query->join('bible_field_bible','b','s.bible_id = b.bible_id');
+  
+  $query->fields('s');
+  $query->fields('b');  
+  
+  //filtering by sections
+  if(isset($options['filter by']) && in_array('section', $options['filter by'])) {
+    $section_ids = array();
+    foreach($variables['sections'] as $section) {
+      $section_ids[] = $section['section_id'];
+    }
+    $query->condition('s.section_id', $section_ids, 'IN');
+  }
+  //filtering by bibles
+  if(isset($options['filter by']) && in_array('bible', $options['filter by'])) {
+    $bible_ids = array();
+    foreach($variables['bibles'] as $bible) {
+      $bible_ids[] = $bible['bible_id'];
+    }
+    $query->condition('bible_id', $bible_ids, 'IN');
+  }
+  
+  $query->orderBy('weight', 'ASC');
+  $result = $query->execute()->fetchAssoc();
+  
+  foreach($result as $record) {
+    $sections[$record['b.abbreviation']][$record['s.section_id']] = array(
+      'name' => $record['name'],
+      'label' => t($record['label']),
+      'abbreviation' => $record['abbreviation'],
+      'available_chapters' => $record['available_chapters'],
+    );
+  }
+  
+  return $sections;
+}
+
+/**
+ * Load a single book
+ */
+function bible_field_load_book($book_id) {
+  $query = db_select('bible_field_book', 'bb');
+  $query->join('bible_field_section', 's', 'bb.section_id = s.section_id');
+  $query->join('bible_field_bible', 'b', 'bb.bible_id = b.bible_id');
+  $query->fields('bb');
+  $query->addField('s', 'label', 'section_label');
+  $query->addField('s', 'abbreviation', 'section_abbreviation');
+  $query->addField('s', 'weight', 'section_weight');  
+  $query->addField('b', 'abbreviation', 'bible_abbreviation');
+  $query->addField('b', 'label', 'bible_label');
+  $query->condition('bb.book_id', $book_id, '=');
+  $result = $query->execute();
+  return $result->fetchAssoc();
+}
+/**
+ * Load books for a given section from bible_field_book
+ *
+ * @param $variables
+ *   An associative array of things to filter by.
+ *   - "bibles": an array of bibles
+ *   - "sections": an array of sections
+ *   - "books": an array of books
+ *
+ * @param $options
+ *   An associative array of options.
+ *   - "filter by": an array of filters, bible and/or section and or bookids
+ *   - "order by": an array of fields to order by
+ *
+ * @return
+ *   An array of books organised by bible section and book name
+ *
+ * TODO:
+ *  - Add filter by machine names
+ */
+function bible_field_load_books($variables = array(), $options = array()) {
+  
+  $query = db_select('bible_field_book', 'bb');
+  $query->join('bible_field_section', 's', 'bb.section_id = s.section_id');
+  $query->join('bible_field_bible', 'b', 'bb.bible_id = b.bible_id');
+  $query->fields('bb');
+  $query->addField('s', 'label', 'section_label');
+  $query->addField('b', 'abbreviation', 'bible_abbreviation');
+  
+  //filtering by books
+  if(isset($options['filter by']) && in_array('book', $options['filter by'])) {
+    $book_ids = array();
+    foreach($variables['books'] as $book) {
+      $book_ids[] = $book['book_id'];
+    }
+    $query->condition('bb.book_id', $book_ids, 'IN');
+  }
+  //filtering by sections
+  if(isset($options['filter by']) && in_array('section', $options['filter by'])) {
+    $section_ids = array();
+    foreach($variables['sections'] as $section) {
+      $section_ids[] = $section['section_id'];
+    }
+    $query->condition('bb.section_id', $section_ids, 'IN');
+  }
+  //filtering by bibles
+  if(isset($options['filter by']) && in_array('bible', $options['filter by'])) {
+    $bible_ids = array();
+    foreach($variables['bibles'] as $bible) {
+      $bible_ids[] = $bible['bible_id'];
+    }
+    $query->condition('bb.bible_id', $bible_ids, 'IN');
+  }
+  $query->orderBy('s.weight','ASC');
+  $query->orderBy('bb.weight', 'ASC');
+  
+  $result = $query->execute();
+  
+  $books = array();
+  while($record = $result->fetchAssoc()) {
+    $books[$record['bible_abbreviation']][$record['section_label']][$record['book_id']] = array(
+      'name' => $record['name'],
+      'label' => t($record['label']),
+      'abbreviation' => $record['abbreviation'],
+      'available_chapters' => $record['available_chapters'],
+    );
+  }
+
+  return $books;
+}
+
+/**
+ * Grab a list of books for a select input
+ *
+ * @param $variables
+ *   An associative array of things to filter by.
+ *   - "bibles": an array of bibles
+ *   - "sections": an array of sections
+ *   - "books": an array of books
+ *
+ * @param $options
+ *   An associative array of options.
+ *   - "filter by": an array of filters, bible and/or section and or bookids
+ *   - "order by": an array of fields to order by
+ *   - "display": what to display as the options text, defaults to label.
+ *   - "value": What value should the options have. "machine_name" for the machine name, or blank for the id.
+ */
+function bible_field_book_options($variables = array(), $options = array()) {
+  $bible = bible_field_load_books($variables, $options);
+  
+  if(!isset($options['display']) || !in_array($options['display'], array('label', 'abbreviation', 'name'))) {
+    $options['display'] = 'label';
+  }
+  
+  $select_options = array();
+  foreach($bible as $bible_abbreviation => $sections) {
+    foreach($sections as $section_abbreviation => $books) {
+      foreach($books as $book_id => $book) {
+        //This was mainly for views integration, but has the added benefit of getting rid of duplicates if we're not grouping the books
+        if(isset($options['value']) && $options['value'] == 'machine_name') {
+          $book_id = $book['name'];
+        }
+        
+        if(isset($options['display bible headers']) && $options['display bible headers']) {
+          if(isset($options['display section headers']) && $options['display section headers']) {
+            $select_options[$bible_abbreviation][$section_abbreviation]["$book_id"] = $book[$options['display']]; 
+          }
+          else {
+            $select_options[$bible_abbreviation]["$book_id"] = $book[$options['display']]; 
+          }          
+        }
+        else if(isset($options['display section headers']) && $options['display section headers']) {
+          $select_options[$section_abbreviation]["$book_id"] = $book[$options['display']]; 
+        }
+        else {      
+          $select_options["$book_id"] = $book[$options['display']];
+        }
+      }
+    }
+  }  
+  
+  return $select_options;
+}
+
+/**
+ * Grab a list of sections for a select input
+ */
+function bible_field_section_options($variables = array(), $options = array()) {
+  $bible = bible_field_load_sections($variables, $options);
+  
+  if(!isset($options['display']) || !in_array($options['display'], array('label', 'abbreviation', 'name'))) {
+    $options['display'] = 'label';
+  }
+  
+  $select_options = array();
+  foreach($bible as $bible_id => $sections) {
+    foreach($sections as $section_id => $books) {
+        $select_options[$section_id] = $section[$options['display']];
+    }
+  }  
+  
+  return $select_options;
+}
+
+
+/**
+ * Grab a list of bibles for a select input
+ */
+function bible_field_bible_options($variables = array(), $options = array()) {
+  $bibles = bible_field_load_bibles($variables, $options);
+  
+  if(!isset($options['display']) || !in_array($options['display'], array('label', 'abbreviation', 'name'))) {
+    $options['display'] = 'label';
+  }
+  
+  $select_options = array();
+  foreach($bibles as $bible_id => $bible) {
+    $select_options["$bible_id"] = $bible[$options['display']];
+  }  
+  
+  return $select_options;
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function bible_field_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module','bible_field') . '/includes',
+  );
+}
+
+/**
+ * Implementation of hook_views_handlers() to register all of the basic handlers
+ * views uses. TODO
+ */
+function bible_field_views_handlers() {
+  return array(
+    'info' => array(
+      'path' => drupal_get_path('module', 'bible_field') .'/includes',
+    ),
+    'handlers' => array(
+      'bible_field_handler_filter_start_end' => array(
+        'parent' => 'views_handler_filter_numeric',
+      ),
+      'bible_field_handler_filter_book' => array(
+        'parent' => 'views_handler_filter_string',
+      ),
+      'bible_field_handler_filter_composite' => array(
+        'parent' => 'views_handler_filter',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_init().
+ */
+function bible_field_init() {
+  // This is added for testing the filter in Views
+  // @TODO: Find a way to add this just to Views pages
+}
+
+// Installing Bibles
+/**
+ * Installs a bible from a given array
+ *
+ * @param $bible 
+ *   A large array of information about a particular bible
+ *   - "name":
+ *   - "label":
+ *   - "abbreviation":
+ *   - "sections": An associative array of sections
+ *    - "name":
+ */
+function bible_field_install_bible($bible) {
+  //insert bible
+  $bible_id = db_insert('bible_field_bible')
+    ->fields(array(
+      'name' => $bible['name'],
+      'label' => $bible['label'],
+      'abbreviation' => $bible['abbreviation'],
+      'weight' => $bible['weight'],
+    ))
+    ->execute();
+  
+  foreach($bible['sections'] as $section_name => $section) {
+    $section_id = db_insert('bible_field_section')
+      ->fields(array(
+        'name' => $section_name,
+        'label' => $section['label'],
+        'abbreviation' => $section['abbreviation'],
+        'weight' => $section['weight'],
+        'bible_id' => $bible_id,
+      ))
+      ->execute();
+    
+    foreach($section['books'] as $book_name => $book) {
+      $book_id = db_insert('bible_field_book')
+      ->fields(array(
+        'name' => $book_name,
+        'label' => $book['label'],
+        'abbreviation' => $book['abbreviation'],
+        'weight' => $book['weight'],
+        'available_chapters' => $book['available_chapters'],
+        'bible_id' => $bible_id,
+        'section_id' => $section_id,
+      ))
+      ->execute();
+    }
+  }
+  
+  drupal_set_message($bible['label'] ." successfully installed.");
+}

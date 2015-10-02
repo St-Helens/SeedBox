@@ -1,0 +1,12 @@
+name = King James Version
+description = The KJV for the bible field module
+core = 7.x
+package = Bibles
+
+dependencies[] = bible_field
+; Information added by drupal.org packaging script on 2012-01-10
+version = "7.x-1.0-alpha2"
+core = "7.x"
+project = "bible_field"
+datestamp = "1326189337"
+

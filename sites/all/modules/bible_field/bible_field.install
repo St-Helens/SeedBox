@@ -1,0 +1,218 @@
+<?php
+
+/**
+ * @file
+ * the install file for bible field
+ */
+
+/**
+ * Implements hook_schema().
+ *
+ * TODO: 
+ *  - add foreign keys
+ *  - decide whether bible ID needs to be in the book table.
+ */
+function bible_field_schema() {
+  $schema = array();
+  //table for storing bibles
+  $schema['bible_field_bible'] = array(
+    'description' => 'Stores a list of Bible Versions available on this site.',
+    'fields' => array(
+      'bible_id' => array(
+        'description' => 'Primary Key: Identifier for a bible.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array( 
+        'description' => 'The machine name of the bible.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'label' => array( 
+        'description' => 'The full length human readable name of the bible.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ), 
+      'abbreviation' => array( 
+        'description' => 'The abreviated human readable name of the bible.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'weight' => array(
+        'description' => 'The weight of the bible. Used for ordering.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'sortable' => TRUE,
+      ),
+    ),
+    'primary key' => array('bible_id'),
+  );
+  
+  //Table for storing bible sections
+  $schema['bible_field_section'] = array(
+    'description' => 'Stores a list of bible sections such as New Testament and Old Testament',
+    'fields' => array(
+      'section_id' => array(
+        'description' => 'Primary Key: Identifier for a section.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'bible_id' => array(
+        'description' => 'The bible this section belongs to',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'name' => array( 
+        'description' => 'The machine name of the book.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),     
+      'label' => array( 
+        'description' => 'The full length human readable name of the section.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'abbreviation' => array( 
+        'description' => 'The abreviated human readable name of the section.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'weight' => array(
+        'description' => 'The weight of the section. Used for ordering.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'sortable' => TRUE,
+      ),
+    ),
+    'primary key' => array('section_id'),
+  );
+  
+  //Table for storing bible books
+  $schema['bible_field_book'] = array(
+    'description' => 'Stores a list of bible books such as ephesians',
+    'fields' => array(
+      'book_id' => array(
+        'description' => 'Primary Key: Identifier for a book.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'section_id' => array(
+        'description' => 'The section the book belongs to',
+        'type' => 'int',
+        'not null' => true,
+        'unsigned' => true,
+      ),
+      'bible_id' => array(
+        'description' => 'The bible the book belongs to',
+        'type' => 'int',
+        'not null' => true,
+        'unsigned' => true,
+      ),
+      'name' => array( 
+        'description' => 'The machine name of the book.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'label' => array( 
+        'description' => 'The full length human readable name of the book.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'abbreviation' => array( 
+        'description' => 'The abreviated human readable name of the book.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'available_chapters' => array(
+        'description' => 'How many chapters are available in this book.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'weight' => array(
+        'description' => 'The weight of the book. Used for ordering.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'sortable' => TRUE,
+      ),
+    ),
+    'primary key' => array('book_id'),
+  );
+  
+  return $schema;
+} 
+ 
+/**
+ * Implements hook_field_schema().
+ */
+function bible_field_field_schema($field) {
+  $columns = array(
+    'book_id' => array(
+      'type' => 'int',
+      'not null' => FALSE,
+      'sortable' => TRUE,
+      'views' => TRUE,
+    ),
+    'book_name' => array(
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => FALSE,
+      'sortable' => TRUE,
+      'views' => TRUE,
+    ),
+    'chapter_start' => array(
+      'type' => 'int', 
+      'not null' => FALSE, 
+      'sortable' => TRUE, 
+      'views' => FALSE,
+    ),
+    'chapter_end' => array(
+      'type' => 'int', 
+      'not null' => FALSE, 
+      'sortable' => TRUE, 
+      'views' => FALSE,
+    ),
+    'verse_start' => array(
+      'type' => 'int', 
+      'not null' => FALSE, 
+      'sortable' => TRUE, 
+      'views' => FALSE,
+    ),
+    'verse_end' => array(
+      'type' => 'int', 
+      'not null' => FALSE, 
+      'sortable' => TRUE, 
+      'views' => TRUE,
+    ),
+    'reference_start_weight' => array(
+      'type' => 'int',
+      'not null' => FALSE,
+      'sortable' => TRUE,
+      'views' => TRUE,
+    ),
+    'reference_end_weight' => array(
+      'type' => 'int',
+      'not null' => FALSE,
+      'sortable' => TRUE,
+      'views' => TRUE,
+    ),
+  );
+  $indexes = array();
+  
+  return array(
+    'columns' => $columns,
+    'indexes' => $indexes,
+  );
+}

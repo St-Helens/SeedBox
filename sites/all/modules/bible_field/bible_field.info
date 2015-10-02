@@ -1,0 +1,17 @@
+name = Bible Field
+description = A field for Bible references
+package = Church Tools
+core = 7.x
+
+dependencies[] = field
+dependencies[] = devel
+
+files[] = includes/bible_field_views_handler_filter_book.inc
+files[] = includes/bible_field_views_handler_filter_composite.inc
+files[] = includes/bible_field_views_handler_filter_start_end.inc
+; Information added by drupal.org packaging script on 2012-01-10
+version = "7.x-1.0-alpha2"
+core = "7.x"
+project = "bible_field"
+datestamp = "1326189337"
+
