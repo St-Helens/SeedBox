@@ -32,7 +32,7 @@ public class TalkList {
         return talks;
     }
 
-    @XmlElement
+    @XmlElement(name = "talk")
     public TalkList setTalks(List<Talk> talks) {
         this.talks = talks;
         return this;

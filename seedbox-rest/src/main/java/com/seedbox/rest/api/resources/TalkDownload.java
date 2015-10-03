@@ -1,5 +1,7 @@
 package com.seedbox.rest.api.resources;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -17,6 +19,7 @@ public class TalkDownload {
         return id;
     }
 
+    @XmlAttribute
     public TalkDownload setId(Long id) {
         this.id = id;
         return this;
@@ -26,6 +29,7 @@ public class TalkDownload {
         return talkDownloadType;
     }
 
+    @XmlElement(name = "type")
     public TalkDownload setTalkDownloadType(TalkDownloadType talkDownloadType) {
         this.talkDownloadType = talkDownloadType;
         return this;
@@ -35,6 +39,7 @@ public class TalkDownload {
         return size;
     }
 
+    @XmlElement
     public TalkDownload setSize(Integer size) {
         this.size = size;
         return this;
@@ -44,6 +49,7 @@ public class TalkDownload {
         return location;
     }
 
+    @XmlElement
     public TalkDownload setLocation(String location) {
         this.location = location;
         return this;

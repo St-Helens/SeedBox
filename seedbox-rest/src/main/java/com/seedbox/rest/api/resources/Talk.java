@@ -18,6 +18,7 @@ public class Talk {
     private String thumbnail;
     private TalkType type;
     private List<TalkDownload> talkDownloads;
+    private Speaker speaker;
 
     public Long getId() {
         return id;
@@ -83,9 +84,19 @@ public class Talk {
         return talkDownloads;
     }
 
-    @XmlElement
+    @XmlElement(name = "downloads")
     public Talk setTalkDownloads(List<TalkDownload> talkDownloads) {
         this.talkDownloads = talkDownloads;
+        return this;
+    }
+
+    public Speaker getSpeaker() {
+        return speaker;
+    }
+
+    @XmlElement
+    public Talk setSpeaker(Speaker speaker) {
+        this.speaker = speaker;
         return this;
     }
 }

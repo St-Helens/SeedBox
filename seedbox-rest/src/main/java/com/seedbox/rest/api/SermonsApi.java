@@ -48,7 +48,7 @@ public class SermonsApi {
             List<Talk> talks = new ArrayList<Talk>();
             List<TalkDownload> talkDownloads = new ArrayList<TalkDownload>();
             talkDownloads.add(new TalkDownload().setId(45L).setLocation("somewhereoutthere.mp3").setSize(100000).setTalkDownloadType(new TalkDownloadType().setValue("mp3")));
-            talks.add(new Talk().setCode("123").setId(1L).setBibleReference("gen").setThumbnail("some.jpg").setTitle("hello").setType(new TalkType().setId(123L).setValue("SM")).setTalkDownloads(talkDownloads));
+            talks.add(new Talk().setSpeaker(new Speaker().setName("William")).setCode("123").setId(1L).setBibleReference("gen").setThumbnail("some.jpg").setTitle("hello").setType(new TalkType().setId(123L).setValue("SM")).setTalkDownloads(talkDownloads));
             talks.add(new Talk().setCode("abc").setId(2L).setBibleReference("gen").setThumbnail("some.jpg").setTitle("hello").setType(new TalkType().setId(123L).setValue("SM")).setTalkDownloads(talkDownloads));
             talks.add(new Talk().setCode("def").setId(3L).setBibleReference("gen").setThumbnail("some.jpg").setTitle("hello").setType(new TalkType().setId(123L).setValue("SM")).setTalkDownloads(talkDownloads));
 
