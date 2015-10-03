@@ -35,36 +35,27 @@ public class SermonsApi {
     @GET
     @Path("/recent")
     @Produces(MediaType.APPLICATION_XML)
-    public TalkList getRecentTalksList(){
+    public TalkList getRecentTalksList() {
         logger.info("ENTERING METHOD");
         TalkList talkList = new TalkList();
-        try{
-        JAXBContext context = JAXBContext.newInstance(TalkList.class);
 
 
-        Marshaller m = context.createMarshaller();
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        List<Talk> talks = new ArrayList<Talk>();
+        List<TalkDownload> talkDownloads = new ArrayList<TalkDownload>();
+        talkDownloads.add(new TalkDownload().setId(45L).setLocation("somewhereoutthere.mp3").setSize(100000).setTalkDownloadType(new TalkDownloadType().setValue("mp3")));
+        talks.add(new Talk().setSpeaker(new Speaker().setName("William")).setCode("123").setId(1L).setBibleReference("gen").setThumbnail("some.jpg").setTitle("hello").setType(new TalkType().setId(123L).setValue("SM")).setTalkDownloads(talkDownloads));
+        talks.add(new Talk().setCode("abc").setId(2L).setBibleReference("gen").setThumbnail("some.jpg").setTitle("hello").setType(new TalkType().setId(123L).setValue("SM")).setTalkDownloads(talkDownloads));
+        talks.add(new Talk().setCode("def").setId(3L).setBibleReference("gen").setThumbnail("some.jpg").setTitle("hello").setType(new TalkType().setId(123L).setValue("SM")).setTalkDownloads(talkDownloads));
 
-            List<Talk> talks = new ArrayList<Talk>();
-            List<TalkDownload> talkDownloads = new ArrayList<TalkDownload>();
-            talkDownloads.add(new TalkDownload().setId(45L).setLocation("somewhereoutthere.mp3").setSize(100000).setTalkDownloadType(new TalkDownloadType().setValue("mp3")));
-            talks.add(new Talk().setSpeaker(new Speaker().setName("William")).setCode("123").setId(1L).setBibleReference("gen").setThumbnail("some.jpg").setTitle("hello").setType(new TalkType().setId(123L).setValue("SM")).setTalkDownloads(talkDownloads));
-            talks.add(new Talk().setCode("abc").setId(2L).setBibleReference("gen").setThumbnail("some.jpg").setTitle("hello").setType(new TalkType().setId(123L).setValue("SM")).setTalkDownloads(talkDownloads));
-            talks.add(new Talk().setCode("def").setId(3L).setBibleReference("gen").setThumbnail("some.jpg").setTitle("hello").setType(new TalkType().setId(123L).setValue("SM")).setTalkDownloads(talkDownloads));
+        talkList.setTotal(100000).setTalks(talks);
 
-            talkList.setTotal(100000).setTalks(talks);
-
-            m.marshal(talkList, System.out);
-        } catch (JAXBException e) {
-            logger.error(ExceptionUtils.getStackTrace(e));
-        }
         logger.info("LEAVING METHOD");
         return talkList;
     }
 
     @GET
     @Path("/id/{id}")
-    public String something(@PathParam("id") String id){
+    public String something(@PathParam("id") String id) {
         return id;
     }
 
