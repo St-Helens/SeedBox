@@ -54,7 +54,7 @@ public class Talk {
         return bibleReference;
     }
 
-    @XmlElement
+    @XmlElement(name = "bible_ref")
     public Talk setBibleReference(String bibleReference) {
         this.bibleReference = bibleReference;
         return this;
