@@ -1,7 +1,7 @@
 # R Script to carry out the web_scraping
 
 
-# load libraries
+# load librariesin
 require(rvest)
 require(data.table)
 
@@ -10,7 +10,10 @@ orig_wd <- getwd()
 system('mkdir DG')
 system('mkdir TGC')
 
+# set the working directory to DG to save the Desiring God data
+setwd(paste0(orig_wd,'/DG'))
 
+# load topic data
 DG_base_url <- 'http://www.desiringgod.org'
 DG_topic_url <- paste0(DG_base_url,'/messages/by-topic')
 DG_html_data <- read_html(DG_topic_url)
@@ -31,8 +34,9 @@ DG_refs <- lapply(DG_topics_links,function(y){
 names(DG_refs) <- DG_topics_text
 saveRDS(DG_refs,"DG_refs.rds")
 
-
-setwd("~/Documents/TGC/")
+# set the working directory to TGC to save the The  data
+#setwd("~/Documents/TGC/")
+setwd(paste0(orig_wd,'/TGC'))
 TGC_base_url <- 'http://resources.thegospelcoalition.org'
 
 TGC_topic_url <- paste0(TGC_base_url,'/library/topic_index')
@@ -149,6 +153,8 @@ TGC_refs2 <- lapply(seq_along(TGC_refs),function(y0){
 
 names(TGC_refs2) <- sapply(seq_along(href_sections),function(y1){paste0(gsub(" ","_",href_sections[[y1]]),collapse=".")})
 
+# bring back to original working directory
+setwd(orig_wd)
 
 # Get book chapter numbers
 BG_base_url <- 'https://www.biblegateway.com'
@@ -391,6 +397,17 @@ DG_refs_dt_w_chap_vs$end_vs_id <- get_verse_id(dt=DG_refs_dt_w_chap_vs,type='end
 DG_refs_dt_w_chap_vs <- DG_refs_dt_w_chap_vs[!is.na(DG_refs_dt_w_chap_vs$book),]
 DG_refs_vs_ids <- DG_refs_dt_w_chap_vs[,list(num_ref=.N,vs_ids=list(sort(unlist(lapply(seq(nrow(.SD)),function(y){c(first_vs_id[y]:end_vs_id[y])}))))),by=c('topic','book')]
 
+DG_refs_vs_ids_by_vs <- rbindlist(lapply(seq(nrow(DG_refs_vs_ids)),function(y){
+  data.table(vs_id=DG_refs_vs_ids[y,vs_ids][[1]],
+             topic=rep(DG_refs_vs_ids[y,topic],length(DG_refs_vs_ids[y,vs_ids][[1]])))
+  }))
+setkey(DG_refs_vs_ids_by_vs,vs_id)
+DG_refs_vs_ids_by_vs <- DG_refs_vs_ids_by_vs[,list(topic_list=list(topic)),by=vs_id]
+
+# output the desiring god topics for Monty to aggregate
+write.csv(data.frame(x=sort(table(DG_refs_dt_w_chap_vs$topic),decreasing = TRUE)),'desiring_god_topics.csv')
+
+
 TGC_refs_dt_w_chap_vs$first_vs_id <- get_verse_id(dt=TGC_refs_dt_w_chap_vs,type='first')
 TGC_refs_dt_w_chap_vs$end_vs_id <- get_verse_id(dt=TGC_refs_dt_w_chap_vs,type='end')
 
@@ -417,6 +434,20 @@ TGC_refs_dt_w_chap_vs <- TGC_refs_dt_w_chap_vs[!is.na(TGC_refs_dt_w_chap_vs$firs
 
 TGC_refs_vs_ids <- TGC_refs_dt_w_chap_vs[,list(num_ref=.N,vs_ids=list(sort(unlist(lapply(seq(nrow(.SD)),function(y){c(first_vs_id[y]:end_vs_id[y])}))))),by=c('TGC_topic_1','TGC_topic_2','TGC_topic_3','book')]
 
+TGC_refs_vs_ids_by_vs <- rbindlist(lapply(seq(nrow(TGC_refs_vs_ids)),function(y){
+  data.table(vs_id=TGC_refs_vs_ids[y,vs_ids][[1]],TGC_topic_1=rep(TGC_refs_vs_ids[y,TGC_topic_1],length(TGC_refs_vs_ids[y,vs_ids][[1]])),TGC_topic_2=rep(TGC_refs_vs_ids[y,TGC_topic_2],length(TGC_refs_vs_ids[y,vs_ids][[1]])),TGC_topic_3=rep(TGC_refs_vs_ids[y,TGC_topic_3],length(TGC_refs_vs_ids[y,vs_ids][[1]])))
+}))
+setkey(TGC_refs_vs_ids_by_vs,vs_id)
+TGC_refs_vs_ids_by_vs <- TGC_refs_vs_ids_by_vs[,list(TGC_topic_1_list=list(TGC_topic_1),
+                                                     TGC_topic_2_list=list(TGC_topic_2),
+                                                     TGC_topic_3_list=list(TGC_topic_3)
+                                                     ),by=vs_id]
+
+# output the gospel coalition topics for monty to aggregate topics
+write.csv(unique(TGC_refs_dt_w_chap_vs[,c('TGC_topic_1','TGC_topic_2','TGC_topic_3'),with=FALSE],by=c('TGC_topic_1','TGC_topic_2','TGC_topic_3')),'the_gospel_coalition_topics.csv',row.names=FALSE)
+
+
+# This assumes that the sqldump of the mediadb has been restored
 library(RMySQL)
 con <- dbConnect(MySQL(),
                  user = 'root',
@@ -519,14 +550,19 @@ kk$end_vs_id <- get_verse_id(dt=kk,type='end')
 kk_list <- lapply(seq(nrow(kk)),function(y){
   #print(y)
   if(is.na(kk[y,first_vs_id]) | is.na(kk[y,end_vs_id])){
-    NA
+    return(NA)
   }else{
-      c(kk[y,first_vs_id]:kk[y,end_vs_id])
+      tmp <- c(kk[y,first_vs_id]:kk[y,end_vs_id])
+      tmp_dt <- data.table(vs_id=tmp,key='vs_id')
+    TGC_topics <- TGC_refs_vs_ids_by_vs[tmp_dt,]
+    DG_topics <- DG_refs_vs_ids_by_vs[tmp_dt,]
+    
+    all_topics <- sort(table(c(unlist(TGC_topics$TGC_topic_1_list),
+                    unlist(TGC_topics$TGC_topic_2_list),
+                    unlist(TGC_topics$TGC_topic_3_list),
+                    unlist(DG_topics$topic_list))),decreasing = TRUE)
+    return(all_topics)
   }
-})
-
-find_topics <- function(y){
-  
-}
-
+}) 
+names(kk_list) <- talk_tbl$SCRIPREF
 
