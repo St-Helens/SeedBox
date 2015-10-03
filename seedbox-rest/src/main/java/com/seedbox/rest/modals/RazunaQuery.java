@@ -1,35 +1,35 @@
 package com.seedbox.rest.modals;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import java.util.List;
 
-/**
+/*
  * Created by Nim on 03/10/2015.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RazunaCustomFields {
-    private List<String> COLUMNS;
-    private List<List<String>> DATA;
+public class RazunaQuery {
+    private String[] COLUMNS;
+    private String[][] DATA;
 
-    public  RazunaCustomFields(){
+    public RazunaQuery(){
 
     }
 
-    public List<String> getCOLUMNS() {
+    public String[] getCOLUMNS() {
         return COLUMNS;
     }
 
-    public void setCOLUMNS(List<String> COLUMNS) {
+    public void setCOLUMNS(String[] COLUMNS) {
         this.COLUMNS = COLUMNS;
     }
 
-    public List<List<String>> getDATA() {
+    public String[][] getDATA() {
         return DATA;
     }
 
-    public void setDATA(List<List<String>> DATA) {
+    public void setDATA(String[][] DATA) {
         this.DATA = DATA;
     }
 
