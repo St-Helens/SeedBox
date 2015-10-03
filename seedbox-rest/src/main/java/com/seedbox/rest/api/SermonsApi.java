@@ -2,15 +2,14 @@ package com.seedbox.rest.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seedbox.rest.api.resources.*;
+import com.seedbox.rest.service.RazunaService;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.springframework.core.NestedExceptionUtils;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.inject.Inject;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -27,6 +26,9 @@ public class SermonsApi {
     public static final String PING = "ping";
     private XLogger logger = XLoggerFactory.getXLogger(SermonsApi.class);
 
+    @Inject
+    private RazunaService razunaService;
+
     @GET
     public String ping() {
         return PING;
@@ -36,10 +38,9 @@ public class SermonsApi {
     @Path("/recent")
     @Produces(MediaType.APPLICATION_XML)
     public TalkList getRecentTalksList() {
-        logger.info("ENTERING METHOD");
+        logger.info("Getting recent list");
+
         TalkList talkList = new TalkList();
-
-
         List<Talk> talks = new ArrayList<Talk>();
         List<TalkDownload> talkDownloads = new ArrayList<TalkDownload>();
         talkDownloads.add(new TalkDownload().setId(45L).setLocation("somewhereoutthere.mp3").setSize(100000).setTalkDownloadType(new TalkDownloadType().setValue("mp3")));
@@ -49,14 +50,26 @@ public class SermonsApi {
 
         talkList.setTotal(100000).setTalks(talks);
 
-        logger.info("LEAVING METHOD");
         return talkList;
     }
 
     @GET
-    @Path("/id/{id}")
-    public String something(@PathParam("id") String id) {
-        return id;
+    @Path("/search")
+    public String something(@QueryParam("query") String query) {
+        if(query ==null){
+            query = "*";
+        }
+        List<String> idFromSearch = razunaService.getRazunaQueryIds(query);
+
+        StringBuilder sb = new StringBuilder();
+        for (String s : idFromSearch)
+        {
+            sb.append(s);
+            sb.append(",");
+        }
+
+
+        return sb.toString();
     }
 
 
