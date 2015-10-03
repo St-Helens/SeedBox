@@ -35,7 +35,6 @@ public class TalkList {
     @XmlElement
     public TalkList setTalks(List<Talk> talks) {
         this.talks = talks;
-        setTotal(talks.size());
         return this;
     }
 }

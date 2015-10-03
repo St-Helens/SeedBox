@@ -3,6 +3,7 @@ package com.seedbox.rest.api.resources;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.List;
 
 /**
  * Created by Chuckie on 03/10/2015.
@@ -16,6 +17,7 @@ public class Talk {
     private String bibleReference;
     private String thumbnail;
     private TalkType type;
+    private List<TalkDownload> talkDownloads;
 
     public Long getId() {
         return id;
@@ -71,8 +73,19 @@ public class Talk {
         return type;
     }
 
+    @XmlElement
     public Talk setType(TalkType type) {
         this.type = type;
+        return this;
+    }
+
+    public List<TalkDownload> getTalkDownloads() {
+        return talkDownloads;
+    }
+
+    @XmlElement
+    public Talk setTalkDownloads(List<TalkDownload> talkDownloads) {
+        this.talkDownloads = talkDownloads;
         return this;
     }
 }

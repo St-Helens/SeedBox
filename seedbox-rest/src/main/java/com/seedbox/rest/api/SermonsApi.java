@@ -1,9 +1,7 @@
 package com.seedbox.rest.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.seedbox.rest.api.resources.Talk;
-import com.seedbox.rest.api.resources.TalkList;
-import com.seedbox.rest.api.resources.TalkType;
+import com.seedbox.rest.api.resources.*;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -48,11 +46,13 @@ public class SermonsApi {
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
             List<Talk> talks = new ArrayList<Talk>();
-            talks.add(new Talk().setCode("123").setId(1L).setBibleReference("gen").setThumbnail("some.jpg").setTitle("hello").setType(new TalkType().setId(123L).setValue("SM")));
-            talks.add(new Talk().setCode("abc").setId(2L).setBibleReference("gen").setThumbnail("some.jpg").setTitle("hello").setType(new TalkType().setId(123L).setValue("SM")));
-            talks.add(new Talk().setCode("def").setId(3L).setBibleReference("gen").setThumbnail("some.jpg").setTitle("hello").setType(new TalkType().setId(123L).setValue("SM")));
+            List<TalkDownload> talkDownloads = new ArrayList<TalkDownload>();
+            talkDownloads.add(new TalkDownload().setId(45L).setLocation("somewhereoutthere.mp3").setSize(100000).setTalkDownloadType(new TalkDownloadType().setValue("mp3")));
+            talks.add(new Talk().setCode("123").setId(1L).setBibleReference("gen").setThumbnail("some.jpg").setTitle("hello").setType(new TalkType().setId(123L).setValue("SM")).setTalkDownloads(talkDownloads));
+            talks.add(new Talk().setCode("abc").setId(2L).setBibleReference("gen").setThumbnail("some.jpg").setTitle("hello").setType(new TalkType().setId(123L).setValue("SM")).setTalkDownloads(talkDownloads));
+            talks.add(new Talk().setCode("def").setId(3L).setBibleReference("gen").setThumbnail("some.jpg").setTitle("hello").setType(new TalkType().setId(123L).setValue("SM")).setTalkDownloads(talkDownloads));
 
-            talkList.setTalks(talks);
+            talkList.setTotal(100000).setTalks(talks);
 
             m.marshal(talkList, System.out);
         } catch (JAXBException e) {
