@@ -109,7 +109,7 @@
             <version>2.5.1</version>
         </dependency>
 
-        <!-- Razuna JSON FasterXML -->
+        <!-- RazunaQuery JSON FasterXML -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
