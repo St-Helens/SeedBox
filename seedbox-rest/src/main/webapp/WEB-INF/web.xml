@@ -20,7 +20,6 @@
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
 
-
     <servlet>
         <servlet-name>jersey-serlvet</servlet-name>
         <servlet-class>
