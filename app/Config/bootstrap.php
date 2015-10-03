@@ -23,7 +23,11 @@
  */
 
 // Setup a 'default' cache configuration for use in the application.
-Cache::config('default', array('engine' => 'File'));
+//Cache::config('default', array('engine' => 'File'));
+Cache::config('default', array(
+    'engine' => 'File',
+    'mask' => 0666,
+));
 
 /**
  * The settings below can be used to set additional paths to models, views and controllers.
