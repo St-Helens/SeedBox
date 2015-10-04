@@ -85,6 +85,7 @@
   <ItemGroup>
     <Content Include="Search.html" />
     <Content Include="packages.config" />
+    <None Include="Properties\PublishProfiles\SeedBox.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

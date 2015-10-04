@@ -17,103 +17,125 @@
     <![endif]-->
 </head>
 <body>
-    <h1>Sermons</h1>
-    <div id="sermonsGrid"></div>
-    <script src="/Scripts/jquery-1.9.1.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="/Scripts/bootstrap.js"></script>
-    <script src="/Scripts/kendo/2014.1.318/kendo.web.min.js"></script>
-    <script>
-        // jQuery ready function ensures DOM is loaded before the code inside is executed
-        $(function () {
-            // use jQuery a selector to get the div with an id of peopleGrid and call the kendoGrid function, passing in a configuration object to initialise the grid
-            $("#sermonsGrid").kendoGrid({
-                dataSource: {
-                    transport: {
-                        read: {
-                            url: "/Sermon"
-                        },
-                        create: {
-                            url: "/Sermon",
-                            type: "POST"
-                        },
-                        update: {
-                            url: "/Sermon",
-                            type: "PUT"
-                        },
-                        destroy: {
-                            url: "/Sermon",
-                            type: "DELETE"
-                        }
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">SeedBox - C4TK</a>
+            </div>
+            <div>
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">Sermon Uploads</a></li>
+                    <li><a href="Search.html">Search</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+<div id="sermonsGrid"></div>
+<script src="/Scripts/jquery-1.9.1.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="/Scripts/bootstrap.js"></script>
+<script src="/Scripts/kendo/2014.1.318/kendo.web.min.js"></script>
+<script>
+    // jQuery ready function ensures DOM is loaded before the code inside is executed
+    $(function() {
+        // use jQuery a selector to get the div with an id of peopleGrid and call the kendoGrid function, passing in a configuration object to initialise the grid
+        $("#sermonsGrid").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "/Sermon"
                     },
-                    schema: {
-                        model: {
-                            id: "id", type: "number",
-                            fields: {
-                                Talk: {
-                                    gid: "id", type: "number",
-                                },
-                                refStart: {
-                                    sBook: "Book", type: "String",
-                                    sChapter: "Chapter", type: "number",
-                                    sVerse: "Verse", type: "number",
-                                },
-                                refEnd: {
-                                    eBook: "Book", type: "String",
-                                    eChapter: "Chapter", type: "number",
-                                    eVerse: "Verse", type: "number",
-                                },
-                                TalkType: { type: "number "},
-                                Series: {
-                                    sTitle: "Title", type: "String",
-                                },
-                                DateTime: { type: "date" },
-                                mp3: {
-                                    mLocation: "Location", type: "String",
-                                },
-                                Video: {
-                                    Location: "Location", type: "String",
-                                }
+                    create: {
+                        url: "/Sermon",
+                        type: "POST"
+                    },
+                    update: {
+                        url: "/Sermon",
+                        type: "PUT"
+                    },
+                    destroy: {
+                        url: "/Sermon",
+                        type: "DELETE"
+                    }
+                },
+                schema: {
+                    model: {
+                        id: "id",
+                        type: "number",
+                        fields: {
+                            Talk: {
+                                gid: "id",
+                                type: "number",
+                            },
+                            refStart: {
+                                sBook: "Book",
+                                type: "String",
+                                sChapter: "Chapter",
+                                type: "number",
+                                sVerse: "Verse",
+                                type: "number",
+                            },
+                            refEnd: {
+                                eBook: "Book",
+                                type: "String",
+                                eChapter: "Chapter",
+                                type: "number",
+                                eVerse: "Verse",
+                                type: "number",
+                            },
+                            TalkType: { type: "number " },
+                            Series: {
+                                sTitle: "Title",
+                                type: "String",
+                            },
+                            DateTime: { type: "date" },
+                            mp3: {
+                                mLocation: "Location",
+                                type: "String",
+                            },
+                            Video: {
+                                Location: "Location",
+                                type: "String",
                             }
                         }
-                    },
-                    //group: { field: "Bandwidth" }
+                    }
                 },
-                groupable: true,
-                sortable: true,
-                reorderable: true,
-                resizable: true,
-                filterable: true,
-                pageable: {
-                     refresh: true,
-                     pageSizes: true,
-                     buttonCount: 5
-                 },
-                columns: [
-                    //{ field: "id", title: "Unique ID" },
-                    { field: "gid", title: "Talk ID" },
-                    { field: "code", title: "Talk Code" },
-                    { field: "Title", title: "Title"},
-                    { field: "Talktype", title: "Talk Type" },
-                    { field: "sBook", title: "Reference Book Start", type: "String" },
-                    { field: "sChapter", title: "Reference Chapter Start" },
-                    { field: "sVerse", title: "Reference Verse Start" },
-                    { field: "eBook", title: "Reference Book End", type: "String" },
-                    { field: "eChapter", title: "Reference Chapter End" },
-                    { field: "eVerse", title: "Reference Verse End" },
-                    { field: "DateTime", title: "Date of Talk" },
-                    { field: "sTitle", title: "Series Title" },
-                    { field: "mlocation", title: "mp3 download location" },
-                    { field: "location", title: "video download location" },
-                    { field: "Speaker", title: "Speaker"},
-                    { field: "Thumbnail", title: "Thumnbail Location"},
-
-                    { command: ["edit", "destroy"] }
-                ],
-                toolbar: ["create"],
-                editable: "popup"
-            });
+                //group: { field: "Bandwidth" }
+            },
+            groupable: true,
+            sortable: true,
+            reorderable: true,
+            resizable: true,
+            filterable: true,
+            pageable: {
+                refresh: true,
+                pageSizes: [10,15,20,25,50,100],
+                buttonCount: 5
+            },
+            columns: [
+                //{ field: "id", title: "Unique ID" },
+                { field: "gid", title: "Talk ID" },
+                { field: "code", title: "Talk Code" },
+                { field: "Title", title: "Title" },
+                { field: "Talktype", title: "Talk Type" },
+                { field: "sBook", title: "Reference Book Start", type: "String" },
+                { field: "sChapter", title: "Reference Chapter Start" },
+                { field: "sVerse", title: "Reference Verse Start" },
+                { field: "eBook", title: "Reference Book End", type: "String" },
+                { field: "eChapter", title: "Reference Chapter End" },
+                { field: "eVerse", title: "Reference Verse End" },
+                { field: "DateTime", title: "Date of Talk" },
+                { field: "sTitle", title: "Series Title" },
+                { field: "mlocation", title: "mp3 download location" },
+                { field: "location", title: "video download location" },
+                { field: "Speaker", title: "Speaker" },
+                { field: "Thumbnail", title: "Thumnbail Location" },
+                { command: ["edit", "destroy"] }
+            ],
+            toolbar: ["create"],
+            editable: "popup"
         });
-    </script>
+    });
+</script>
 </body>
 </html>

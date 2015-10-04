@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <title>Sermon Explorer</title>
+    <title>Search Explorer</title>
     <!-- Bootstrap -->
     <link href="Content/bootstrap.css" rel="stylesheet">
     <link href="Content/kendo/2014.1.318/kendo.common-bootstrap.min.css" rel="stylesheet">
@@ -18,102 +18,83 @@
     <![endif]-->
 </head>
 <body>
-    <h1>Search</h1>
-    <div id="searchGrid"></div>
-    <script src="/Scripts/jquery-1.9.1.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="/Scripts/bootstrap.js"></script>
-    <script src="/Scripts/kendo/2014.1.318/kendo.web.min.js"></script>
-    <script>
-        // jQuery ready function ensures DOM is loaded before the code inside is executed
-        $(function () {
-            // use jQuery a selector to get the div with an id of peopleGrid and call the kendoGrid function, passing in a configuration object to initialise the grid
-            $("#searchGrid").kendoGrid({
-                dataSource: {
-                    transport: {
-                        read: {
-                            url: "/Search"
-                        },
-                        create: {
-                            url: "/Search",
-                            type: "POST"
-                        },
-                        update: {
-                            url: "/Search",
-                            type: "PUT"
-                        },
-                        destroy: {
-                            url: "/Search",
-                            type: "DELETE"
-                        }
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">SeedBox - C4TK</a>
+            </div>
+            <div>
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">Sermon Uploads</a></li>
+                    <li><a href="Search.html">Search</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+<div id="searchGrid"></div>
+<script src="/Scripts/jquery-1.9.1.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="/Scripts/bootstrap.js"></script>
+<script src="/Scripts/kendo/2014.1.318/kendo.web.min.js"></script>
+<script>
+    // jQuery ready function ensures DOM is loaded before the code inside is executed
+    $(function() {
+        // use jQuery a selector to get the div with an id of peopleGrid and call the kendoGrid function, passing in a configuration object to initialise the grid
+        $("#searchGrid").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "/Search"
                     },
-                    schema: {
-                        model: {
-                           /* id: "id", type: "number",
-                            fields: {
-                                Talk: {
-                                    gid: "id", type: "number",
-                                },
-                                refStart: {
-                                    sBook: "Book", type: "String",
-                                    sChapter: "Chapter", type: "number",
-                                    sVerse: "Verse", type: "number",
-                                },
-                                refEnd: {
-                                    eBook: "Book", type: "String",
-                                    eChapter: "Chapter", type: "number",
-                                    eVerse: "Verse", type: "number",
-                                },
-                                TalkType: { type: "number "},
-                                Series: {
-                                    sTitle: "Title", type: "String",
-                                },
-                                DateTime: { type: "date" },
-                                mp3: {
-                                    mLocation: "Location", type: "String",
-                                },
-                                Video: {
-                                    Location: "Location", type: "String",
-                                }
-                            }*/
-                        }
+                    create: {
+                        url: "/Search",
+                        type: "POST"
                     },
-                    //group: { field: "Speaker" },
-                    sort: { field: "Date", dir: 'desc' }
+                    update: {
+                        url: "/Search",
+                        type: "PUT"
+                    },
+                    destroy: {
+                        url: "/Search",
+                        type: "DELETE"
+                    }
                 },
-                groupable: true,
-                sortable: {
-                    mode: "multiple",
-                    allowUnsort: true
+                schema: {
+                    model: {
+                       
+                    }
                 },
-                reorderable: true,
-                resizable: true,
-                filterable: true,
-                pageable: {
-                     refresh: true,
-                     pageSizes: true,
-                     buttonCount: 5
-                 },
-                columns: [
-                    { field: "Title", title: "Title" },
-                    { field: "Speaker", title: "Speaker" },
-                    { field: "Scripture", title: "Scripture" },
-                    { field: "Series", title: "Series Title" },
-                    { field: "DateTime", title: "Date", template: "#= kendo.toString(kendo.parseDate(DateTime, 'yyyy-MM-dd'), 'MM/dd/yyyy') #" },
-
-                    {
-                        field: "VimeoLink",
-                        template: "<div><iframe src=\"https://player.vimeo.com/video/#: VimeoLink#\" width=\"500\" height=\"375\" frameborder=\"0\" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe> <p><a href=\"https://vimeo.com/#: VimeoLink#\"></p></div>",
-                        title: "Vimeo",
-                        width: 500
-                    },
-                   
-                    //{ command: ["edit", "destroy"] }
-                ],
-                //toolbar: ["create"],
-                //editable: "popup"
-            });
+                //group: { field: "Speaker" },
+                sort: { field: "Date", dir: 'desc' }
+            },
+            groupable: true,
+            sortable: {
+                mode: "multiple",
+                allowUnsort: true
+            },
+            reorderable: true,
+            resizable: true,
+            filterable: true,
+            pageable: {
+                refresh: true,
+                pageSizes: [10, 15, 20, 25, 50, 100],
+                buttonCount: 5
+            },
+            columns: [
+                { field: "Title", title: "Title" },
+                { field: "Speaker", title: "Speaker" },
+                { field: "Scripture", title: "Scripture" },
+                { field: "Series", title: "Series Title" },
+                { field: "DateTime", title: "Date", template: "#= kendo.toString(kendo.parseDate(DateTime, 'yyyy-MM-dd'), 'MM/dd/yyyy') #" },
+                {
+                    field: "VimeoLink",
+                    template: "<div><iframe src=\"https://player.vimeo.com/video/#: VimeoLink#\" width=\"500\" height=\"375\" frameborder=\"0\" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe> <p><a href=\"https://vimeo.com/#: VimeoLink#\"></p></div>",
+                    title: "Vimeo",
+                    width: 500
+                },
+            ],
         });
-    </script>
+    });
+</script>
 </body>
 </html> 
