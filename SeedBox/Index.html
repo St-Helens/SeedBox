@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sermon Explorer</title>
+    <!-- Bootstrap -->
+    <link href="Content/bootstrap.css" rel="stylesheet">
+    <link href="Content/kendo/2014.1.318/kendo.common-bootstrap.min.css" rel="stylesheet">
+    <link href="Content/kendo/2014.1.318/kendo.bootstrap.min.css" rel="stylesheet">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <h1>Sermons</h1>
+    <div id="sermonsGrid"></div>
+    <script src="/Scripts/jquery-1.9.1.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="/Scripts/bootstrap.js"></script>
+    <script src="/Scripts/kendo/2014.1.318/kendo.web.min.js"></script>
+    <script>
+        // jQuery ready function ensures DOM is loaded before the code inside is executed
+        $(function () {
+            // use jQuery a selector to get the div with an id of peopleGrid and call the kendoGrid function, passing in a configuration object to initialise the grid
+            $("#sermonsGrid").kendoGrid({
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "/Sermon"
+
+                        },
+                        create: {
+                            url: "/Sermon",
+                            type: "POST"
+                        },
+                        update: {
+                            url: "/Sermon",
+                            type: "PUT"
+                        },
+                        destroy: {
+                            url: "/Sermon",
+                            type: "DELETE"
+                        }
+                    },
+                    schema: {
+                        model: {
+                            id: "id", type: "int"
+                        }
+                    },
+                    //group: { field: "Bandwidth" }
+                },
+                groupable: true,
+                sortable: true,
+                reorderable: true,
+                resizable: true,
+                filterable: true,
+                pageable: {
+                     refresh: true,
+                     pageSizes: true,
+                     buttonCount: 5
+                 },
+                columns: [
+                    { field: "id", title: "Unique ID", type: "int"},
+                    { field: "Talk.id", title: "Talk ID", type: "int" },
+                    { field: "Talk.code", title: "Talk Code", type: "String" },
+                    { field: "Title", title: "Title", type: "String" },
+                    { field: "type", title: "Talk Type" },
+                    /*{ field: "refStart.Book", title: "Reference Book Start", type: "String" },
+                    { field: "refStart.Chapter", title: "Reference Chapter Start" },
+                    { field: "refStart.Verse", title: "Reference Verse Start" },
+                    { field: "refEnd.Book", title: "Reference Book End", type: "String" },
+                    { field: "refEnd.Chapter", title: "Reference Chapter End" },
+                    { field: "refEnd.Verse", title: "Reference Verse End" },*/
+                    { field: "DateTime", title: "Date / Time Created" },
+                    { field: "Series.Title", title: "Series Title" },
+                    { field: "mp3.location", title: "mp3 download location" },
+                    { field: "Video.location", title: "video download location"},
+                    { field: "Speaker", title: "Speaker"},
+                    { field: "Thumbnail", title: "Thumnbail Location"},
+
+                    { command: ["edit", "destroy"] }
+                ],
+                toolbar: [
+                    { name: "create" }
+                ],
+                editable: "popup"
+            });
+        });
+    </script>
+</body>
+</html>
