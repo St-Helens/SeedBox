@@ -83,6 +83,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Search.html" />
     <Content Include="packages.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -770,6 +771,7 @@
     <Content Include="Scripts\kendo\2014.1.318\jquery.min.map" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\SermonController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -778,6 +780,7 @@
     <Compile Include="Models\HelperClasses\Downloads.cs" />
     <Compile Include="Models\HelperClasses\Series.cs" />
     <Compile Include="Models\HelperClasses\Talk.cs" />
+    <Compile Include="Models\SearchResult.cs" />
     <Compile Include="Models\Sermon.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

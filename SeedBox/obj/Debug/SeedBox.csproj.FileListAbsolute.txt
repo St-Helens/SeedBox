@@ -12,3 +12,7 @@ C:\Users\danderson\Documents\Development\St-Helens\SeedBox\SeedBox\bin\System.We
 C:\Users\danderson\Documents\Development\St-Helens\SeedBox\SeedBox\obj\Debug\SeedBox.csprojResolveAssemblyReference.cache
 C:\Users\danderson\Documents\Development\St-Helens\SeedBox\SeedBox\obj\Debug\SeedBox.dll
 C:\Users\danderson\Documents\Development\St-Helens\SeedBox\SeedBox\obj\Debug\SeedBox.pdb
+C:\Users\danderson\Documents\Development\St-Helens\SeedBox\SeedBox\bin\EntityFramework.dll
+C:\Users\danderson\Documents\Development\St-Helens\SeedBox\SeedBox\bin\NLog.dll
+C:\Users\danderson\Documents\Development\St-Helens\SeedBox\SeedBox\bin\EntityFramework.xml
+C:\Users\danderson\Documents\Development\St-Helens\SeedBox\SeedBox\bin\NLog.xml
