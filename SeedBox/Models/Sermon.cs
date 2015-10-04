@@ -13,7 +13,7 @@ namespace SeedBox.Models
         public int id { get; set; }
         public Talk Talk { get; set; }
         public String Title { get; set; }
-        public int type { get; set; }
+        public int Talktype { get; set; }
         public BibleRef refStart { get; set; }
         public BibleRef refEnd { get; set; }
         public DateTime DateTime { get; set; }

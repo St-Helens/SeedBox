@@ -51,19 +51,25 @@
                             id: "id", type: "number",
                             fields: {
                                 Talk: {
-                                    id: "id", type: "number",
+                                    gid: "id", type: "number",
                                 },
                                 refStart: {
-                                    Book: "Book", type: "String",
+                                    sBook: "Book", type: "String",
+                                    sChapter: "Chapter", type: "number",
+                                    sVerse: "Verse", type: "number",
                                 },
                                 refEnd: {
-                                    Book: "Book", type: "String",
+                                    eBook: "Book", type: "String",
+                                    eChapter: "Chapter", type: "number",
+                                    eVerse: "Verse", type: "number",
                                 },
+                                TalkType: { type: "number "},
                                 Series: {
-                                    Title: "Title", type: "String",
+                                    sTitle: "Title", type: "String",
                                 },
+                                DateTime: { type: "date" },
                                 mp3: {
-                                    Location: "Location", type: "String",
+                                    mLocation: "Location", type: "String",
                                 },
                                 Video: {
                                     Location: "Location", type: "String",
@@ -84,29 +90,27 @@
                      buttonCount: 5
                  },
                 columns: [
-                    { field: "id", title: "Unique ID" },
-                    { field: "Talk.id", title: "Talk ID" },
-                    { field: "Talk.code", title: "Talk Code" },
+                    //{ field: "id", title: "Unique ID" },
+                    { field: "gid", title: "Talk ID" },
+                    { field: "code", title: "Talk Code" },
                     { field: "Title", title: "Title"},
-                    { field: "type", title: "Talk Type" },
-                    { field: "refStart.Book", title: "Reference Book Start", type: "String" },
-                    { field: "refStart.Chapter", title: "Reference Chapter Start" },
-                    { field: "refStart.Verse", title: "Reference Verse Start" },
-                    { field: "refEnd.Book", title: "Reference Book End", type: "String" },
-                    { field: "refEnd.Chapter", title: "Reference Chapter End" },
-                    { field: "refEnd.Verse", title: "Reference Verse End" },
-                    { field: "DateTime", title: "Date / Time Created" },
-                    { field: "Series.Title", title: "Series Title" },
-                    { field: "mp3.location", title: "mp3 download location" },
-                    { field: "Video.location", title: "video download location" },
+                    { field: "Talktype", title: "Talk Type" },
+                    { field: "sBook", title: "Reference Book Start", type: "String" },
+                    { field: "sChapter", title: "Reference Chapter Start" },
+                    { field: "sVerse", title: "Reference Verse Start" },
+                    { field: "eBook", title: "Reference Book End", type: "String" },
+                    { field: "eChapter", title: "Reference Chapter End" },
+                    { field: "eVerse", title: "Reference Verse End" },
+                    { field: "DateTime", title: "Date of Talk" },
+                    { field: "sTitle", title: "Series Title" },
+                    { field: "mlocation", title: "mp3 download location" },
+                    { field: "location", title: "video download location" },
                     { field: "Speaker", title: "Speaker"},
                     { field: "Thumbnail", title: "Thumnbail Location"},
 
                     { command: ["edit", "destroy"] }
                 ],
-                toolbar: [
-                    { name: "create" }
-                ],
+                toolbar: ["create"],
                 editable: "popup"
             });
         });
