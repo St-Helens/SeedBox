@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<parameters>
+  <parameter name="Database Server" defaultValue=""></parameter>
+  <parameter name="Database Name" defaultValue=""></parameter>
+  <parameter name="Username" defaultValue=""></parameter>
+  <parameter name="Password" defaultValue=""></parameter>
+  <parameter name="DB Connection String" defaultValue="server={Database Server};database={Database Name};User ID={Username};Password={Password}">
+    <parameterEntry kind="XmlFile"
+                    scope="Web\.config$"
+                    match="//connectionStrings/add[@name='SeedBox']/@connectionString"></parameterEntry>
+  </parameter>
+</parameters>
